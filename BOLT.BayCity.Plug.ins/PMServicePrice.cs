@@ -56,9 +56,9 @@ namespace BOLT.BayCity.Plug.ins
                     if (ent.LogicalName == "bolt_plannedmaintenanceservice" && ent.Attributes.Contains("bolt_generatormake") && ent.Attributes.Contains("bolt_generatorkw") && ent.Attributes.Contains("bolt_pmservicedescription"))
                     {
                         string genMake = (ent.FormattedValues["bolt_generatormake"]).ToUpper();
-                        if (genMake != "KOHLER" && genMake != "CAT" && genMake != "CUMMINS" && genMake !="SPECTRUM" && genMake !="GENERAC") //if make is otherthan kohler, CUMINS and CAT, then default genMake  to "KOHLER"
+                        if (genMake != "KOHLER" && genMake != "CAT" && genMake != "ONAN" && genMake !="SPECTRUM" && genMake !="GENERAC") //if make is otherthan kohler, CUMINS and CAT, then default genMake  to "KOHLER"
                         {
-                            genMake = "GENERAC"; //all pm service descriptions starts with the Genmake(kohle,cat,cummins,) prefix.
+                            genMake = "GENERAC"; //all pm service descriptions starts with the Genmake(kohle,cat,ONAN,) prefix.
                         }
                         else if(genMake == "SPECTRUM")
                         {

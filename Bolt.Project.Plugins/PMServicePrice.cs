@@ -56,19 +56,40 @@ namespace Bolt.Project.Plugins
                     if (ent.LogicalName== "bolt_plannedmaintenanceservice" && ent.Attributes.Contains("bolt_generatormake") && ent.Attributes.Contains("bolt_generatorkw") && ent.Attributes.Contains("bolt_pmservicedescription"))
                     {
                         string genMake = (ent.FormattedValues["bolt_generatormake"]).ToUpper();
-                        if(genMake!="KOHLER"&&genMake!="CAT"&&genMake!="CUMMINS") //if make is otherthan kohler, CUMINS and CAT, then default genMake  to "KOHLER"
+                        int fuelType = ent.GetAttributeValue<OptionSetValue>("bolt_fueltype").Value;
+                        int travelDuration = ent.GetAttributeValue<OptionSetValue>("bolt_travelduration").Value;
+                        if (genMake!="KOHLER"&&genMake!="CAT"&&genMake!="CUMMINS") //if make is otherthan kohler, CUMINS and CAT, then default genMake  to "KOHLER"
                         {
                             genMake = "KOHLER"; //all pm service descriptions starts with the Genmake(kohle,cat,cummins,) prefix.
                         }
                        
-                        Get_ServicePrice(ent,genMake);
+                        Get_ServicePrice(ent,genMake, fuelType, travelDuration);
                     }
                     // KD Maintenanc sERVICE
                    else if (ent.LogicalName == "bolt_kdservicemaintenance"  && ent.Attributes.Contains("bolt_kdkwsize") && ent.Attributes.Contains("bolt_servicedescription"))
                     {
+                        int fuelType = ent.GetAttributeValue<OptionSetValue>("bolt_fueltype").Value;
+                        int travelDuration = ent.GetAttributeValue<OptionSetValue>("bolt_travelduration").Value;
+
                         string prefix = "KD"; //since KD service has no generator make field, so defaulting it to KD. All KD service descriptions starts with the 'KD' prefix 
 
-                        Get_ServicePrice(ent, prefix);
+                        Get_ServicePrice(ent, prefix, fuelType, travelDuration);
+                    }
+                    else if (ent.LogicalName == "bolt_plannedmaintenanceservice" && ent.Attributes.Contains("bolt_loadbanktest") && ent.Attributes.Contains("bolt_generatorkw"))// this step is for to calculate loadbank price.
+                    {
+                        genSize = ent.GetAttributeValue<int>("bolt_generatorkw");
+                        string columnName = ConstructKWSizeFieldName(genSize, ent);
+                        //set the prices on Service record
+                        if (columnName != null)
+                            SetPrices(ent, columnName); // this method pulls loadbank price and updates PM Table.
+                    }
+                    else if(ent.LogicalName == "bolt_kdservicemaintenance" && ent.Attributes.Contains("bolt_loadbanktest") && ent.Attributes.Contains("bolt_kdkwsize"))// this step is for only to calculate loadbank price.
+                    {
+                        genSize = ent.GetAttributeValue<int>("bolt_kdkwsize");
+                        string columnName = ConstructKWSizeFieldName(genSize, ent);
+                        //set the prices on Service record
+                        if(columnName!=null)
+                        SetPrices(ent, columnName); // this method pulls loadbank price and updates KD Table.
                     }
 
                 }
@@ -81,7 +102,7 @@ namespace Bolt.Project.Plugins
         }
 
         //method to get PM service Price
-        public void Get_ServicePrice(Entity serviceEntity, string prefix) //planned maintenance service entity
+        public void Get_ServicePrice(Entity serviceEntity, string prefix, int fuelType, int travDuration) //planned maintenance service entity
         {           
             if (serviceEntity.LogicalName == "bolt_plannedmaintenanceservice") //pm entity
             {
@@ -102,9 +123,10 @@ namespace Bolt.Project.Plugins
             string columnName = ConstructKWSizeFieldName(genSize,serviceEntity);      
 
             string pmservicepricingName = prefix.ToUpper() + " " + ServiceName;
-
+            var query_bolt_fueltype = fuelType;
+            var query_bolt_travelduration = travDuration;
             // Define Condition Values
-             var query_bolt_name = pmservicepricingName;
+            var query_bolt_name = pmservicepricingName;
 
             // Instantiate QueryExpression query
             var query = new QueryExpression("bolt_pmservicepricing");
@@ -114,6 +136,8 @@ namespace Bolt.Project.Plugins
 
             // Define filter query.Criteria
             query.Criteria.AddCondition("bolt_name", ConditionOperator.Equal, query_bolt_name);
+            query.Criteria.AddCondition("bolt_fueltype", ConditionOperator.Equal, query_bolt_fueltype);
+            query.Criteria.AddCondition("bolt_travelduration", ConditionOperator.Equal, query_bolt_travelduration);
 
             EntityCollection resultset = service.RetrieveMultiple(query);
 
@@ -261,7 +285,7 @@ namespace Bolt.Project.Plugins
             {
                var lbtType =  (ent.GetAttributeValue<OptionSetValue>("bolt_loadbanktest")).Value;
 
-                if(lbtType== 454890000)//2hr
+                if(lbtType== 454890000)//2hr (Pm/Kd table value)
                 {
                     loadbanktestPrice = GetLoadbankTestPrice(454890002, fieldName); //45489002 = 2 hr
                 }

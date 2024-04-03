@@ -117,7 +117,7 @@ namespace Bolt.NEG.Resi.Plugins
                 }            
 
             }
-            if(wattage>10000)
+            if(wattage>10000) 
             {
                 wattage_100 = 10000;
                 wattage_40 = (wattage - 10000) * (0.4);
