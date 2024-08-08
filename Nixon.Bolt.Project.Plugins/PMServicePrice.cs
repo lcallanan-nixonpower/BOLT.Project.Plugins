@@ -41,9 +41,9 @@ namespace Bolt.Project.Plugins
                     (IOrganizationServiceFactory)serviceProvider.GetService(typeof(IOrganizationServiceFactory));
                  service = serviceFactory.CreateOrganizationService(context.UserId);
                 Entity serviceEntity = service.Retrieve(ent.LogicalName, ent.Id, new ColumnSet(true));
-        if (serviceEntity.LogicalName == "bolt_plannedmaintenanceservice" && serviceEntity.Attributes.Contains("bolt_generatormake") && serviceEntity.Attributes.Contains("bolt_generatorkw") && serviceEntity.Attributes.Contains("bolt_pmservicedescription"))
+        if (serviceEntity.LogicalName == "bolt_plannedmaintenanceservice" && serviceEntity.Attributes.Contains("bolt_generatormake") && serviceEntity.Attributes.Contains("bolt_fueltype") && serviceEntity.Attributes.Contains("bolt_travelduration") &&serviceEntity.Attributes.Contains("bolt_generatorkw") && serviceEntity.Attributes.Contains("bolt_pmservicedescription"))
         {
-          string prefix = serviceEntity.FormattedValues["bolt_generatormake"].ToUpper();
+            string prefix = serviceEntity.FormattedValues["bolt_generatormake"].ToUpper();
             int fuelType = serviceEntity.GetAttributeValue<OptionSetValue>("bolt_fueltype").Value;
             int travelDuration = serviceEntity.GetAttributeValue<OptionSetValue>("bolt_travelduration").Value;
                     if (prefix != "KOHLER" && prefix != "CAT" && prefix != "CUMMINS")

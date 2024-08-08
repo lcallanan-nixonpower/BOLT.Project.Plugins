@@ -35,18 +35,18 @@ namespace Bolt.NEG.Resi.Plugins
                         if (context.PreEntityImages.Contains("Image"))
                         {
                             Entity preImage = (Entity)context.PreEntityImages["Image"];
-                            if (!preImage.Attributes.Contains("quote"))
+                            if (!preImage.Attributes.Contains("bolt_quote"))
                                 return;
-                            relatedQuote_guid = (preImage.GetAttributeValue<EntityReference>("quote")).Id;
+                            relatedQuote_guid = (preImage.GetAttributeValue<EntityReference>("bolt_quote")).Id;
                             Calculate_TotalAdder_Cost(relatedQuote_guid);
                         }
                         else if (context.PostEntityImages.Contains("Image"))
                         {
 
                             Entity postImage = (Entity)context.PostEntityImages["Image"];
-                            if (!postImage.Attributes.Contains("quote"))
+                            if (!postImage.Attributes.Contains("bolt_quote"))
                                 return;
-                            relatedQuote_guid = (postImage.GetAttributeValue<EntityReference>("quote")).Id;
+                            relatedQuote_guid = (postImage.GetAttributeValue<EntityReference>("bolt_quote")).Id;
                             Calculate_TotalAdder_Cost(relatedQuote_guid);
                         }
                     }
@@ -62,9 +62,9 @@ namespace Bolt.NEG.Resi.Plugins
                 if (context.PreEntityImages.Contains("Image"))
                 {
                     Entity preImageInvoice = (Entity)context.PreEntityImages["Image"];
-                    if (!preImageInvoice.Attributes.Contains("quote"))
+                    if (!preImageInvoice.Attributes.Contains("bolt_quote"))
                         return;
-                    relatedQuote_guid = (preImageInvoice.GetAttributeValue<EntityReference>("quote")).Id;
+                    relatedQuote_guid = (preImageInvoice.GetAttributeValue<EntityReference>("bolt_quote")).Id;
 
                     Calculate_TotalAdder_Cost(relatedQuote_guid);
                 }
@@ -88,7 +88,7 @@ namespace Bolt.NEG.Resi.Plugins
 
             // Define filter query.Criteria
             query.Criteria.AddCondition("statecode", ConditionOperator.Equal, query_statecode);
-            query.Criteria.AddCondition("quote", ConditionOperator.Equal, query_quote);
+            query.Criteria.AddCondition("bolt_quote", ConditionOperator.Equal, query_quote);
             query.Criteria.AddCondition("bolt_addtototalcost", ConditionOperator.Equal, query_bolt_addtototalcost);
             //query.Criteria.AddCondition("bolt_cost", ConditionOperator.NotNull);
 

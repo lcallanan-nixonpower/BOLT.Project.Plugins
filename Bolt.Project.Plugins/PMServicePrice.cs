@@ -53,7 +53,7 @@ namespace Bolt.Project.Plugins
                     Entity ent = service.Retrieve(entity.LogicalName, entity.Id, new ColumnSet(true));
 
                     // PLANEED Maintenanc sERVICE
-                    if (ent.LogicalName== "bolt_plannedmaintenanceservice" && ent.Attributes.Contains("bolt_generatormake") && ent.Attributes.Contains("bolt_generatorkw") && ent.Attributes.Contains("bolt_pmservicedescription"))
+                    if (ent.LogicalName== "bolt_plannedmaintenanceservice" && ent.Attributes.Contains("bolt_generatormake") && ent.Attributes.Contains("bolt_fueltype") && ent.Attributes.Contains("bolt_travelduration") &&ent.Attributes.Contains("bolt_generatorkw") && ent.Attributes.Contains("bolt_pmservicedescription"))
                     {
                         string genMake = (ent.FormattedValues["bolt_generatormake"]).ToUpper();
                         int fuelType = ent.GetAttributeValue<OptionSetValue>("bolt_fueltype").Value;

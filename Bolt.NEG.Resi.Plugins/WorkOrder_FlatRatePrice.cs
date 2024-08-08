@@ -103,7 +103,7 @@ namespace Bolt.NEG.Resi.Plugins
         {
             // Define Condition Values
             var query_statuscode = 1; //active
-            var query_bolt_upsoldproduct = true;
+           // var query_bolt_upsoldproduct = true;
            // var query_msdyn_linestatus = 690970001; //used
             var query_msdyn_workorder = WorderID;
 
@@ -115,27 +115,33 @@ namespace Bolt.NEG.Resi.Plugins
 
             // Define filter query.Criteria
             query.Criteria.AddCondition("statuscode", ConditionOperator.Equal, query_statuscode);
-            query.Criteria.AddCondition("bolt_upsoldproduct", ConditionOperator.Equal, query_bolt_upsoldproduct);
+           // query.Criteria.AddCondition("bolt_upsoldproduct", ConditionOperator.Equal, query_bolt_upsoldproduct);
            // query.Criteria.AddCondition("msdyn_linestatus", ConditionOperator.Equal, query_msdyn_linestatus);
             query.Criteria.AddCondition("msdyn_workorder", ConditionOperator.Equal, query_msdyn_workorder);
 
             EntityCollection wops = service.RetrieveMultiple(query);
 
+            decimal upsoldcosttotal_used = 0.0m;
+            decimal upsoldcosttotal_estimate = 0.0m;
             decimal costtotal_used = 0.0m;
-            decimal costtotal_estimate = 0.0m;
             if (wops.Entities.Count != 0)
             {
                 for (int i = 0; i < wops.Entities.Count; i++)
                 {
+                    // Calculate costs if line status is "used" and product amount is not null
+                    if (wops.Entities[i].Attributes.Contains("msdyn_totalamount") && (wops.Entities[i].GetAttributeValue<OptionSetValue>("msdyn_linestatus")).Value == 690970001 && wops.Entities[i].GetAttributeValue<bool>("bolt_upsoldproduct") is true)
+                    {
+                        upsoldcosttotal_used += ((Money)wops.Entities[i]["msdyn_totalamount"]).Value;
+                    }
+                    else if  (wops.Entities[i].Attributes.Contains("msdyn_estimatetotalamount") && (wops.Entities[i].GetAttributeValue<OptionSetValue>("msdyn_linestatus")).Value == 690970000 && wops.Entities[i].GetAttributeValue<bool>("bolt_upsoldproduct") is true)
+                    {
+                        upsoldcosttotal_estimate += ((Money)wops.Entities[i]["msdyn_estimatetotalamount"]).Value;
+                    }
+
                     if (wops.Entities[i].Attributes.Contains("msdyn_totalamount") && (wops.Entities[i].GetAttributeValue<OptionSetValue>("msdyn_linestatus")).Value == 690970001)
                     {
                         costtotal_used += ((Money)wops.Entities[i]["msdyn_totalamount"]).Value;
                     }
-                    else if  (wops.Entities[i].Attributes.Contains("msdyn_estimatetotalamount") && (wops.Entities[i].GetAttributeValue<OptionSetValue>("msdyn_linestatus")).Value == 690970000)
-                    {
-                            costtotal_estimate += ((Money)wops.Entities[i]["msdyn_estimatetotalamount"]).Value;
-                    }
-
                 }             
 
             }
@@ -143,8 +149,9 @@ namespace Bolt.NEG.Resi.Plugins
 
             Entity wo = new Entity("msdyn_workorder");
             wo.Id = relatedWO_guid;
-            wo["bolt_additionalproducts"] = costtotal_used;
-            wo["bolt_estimatedadditionalproducts"] = costtotal_estimate;
+            wo["bolt_additionalproducts"] = upsoldcosttotal_used;
+           wo["bolt_estimatedadditionalproducts"] = upsoldcosttotal_estimate;
+            wo["bolt_usedproductstotal"] = costtotal_used;
             service.Update(wo);
 
         }

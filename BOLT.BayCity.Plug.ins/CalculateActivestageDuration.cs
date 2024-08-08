@@ -4,12 +4,16 @@ using System;
 
 namespace BOLT.BayCity.Plug.ins
 {
-    //Registered on pre-operation stage,  to capture the inactive stage plug-in is registered on pre-operationstage.
+    //Registered on pre-operation stage to update end date,  
     public class CalculateActivestageDuration : IPlugin
     {
         IOrganizationService service;
         ITracingService tracingService;
-        Guid opportunity_guid;
+        Guid opportunityId;
+        Guid lastActivestageID;
+        Guid activeStageID;
+        string stageName;
+        int stageStatus;
         public void Execute(IServiceProvider serviceProvider)
         {
             //Extract the tracing service for use in debugging sandboxed plug-ins.
@@ -30,19 +34,50 @@ namespace BOLT.BayCity.Plug.ins
                         if (context.PreEntityImages.Contains("Image"))
                         {
                             Entity preImageMisc = (Entity)context.PreEntityImages["Image"];
-                            if (preImageMisc.Attributes.Contains("bpf_opportunityid")|| preImageMisc.Attributes.Contains("opportunityid"))
+                            if (preImageMisc.Attributes.Contains("bpf_opportunityid") || preImageMisc.Attributes.Contains("opportunityid"))
                             {
 
-                            Guid opportunityId = preImageMisc.Attributes.Contains("bpf_opportunityid")?(preImageMisc.GetAttributeValue<EntityReference>("bpf_opportunityid")).Id: (preImageMisc.GetAttributeValue<EntityReference>("opportunityid")).Id;
+                                opportunityId = preImageMisc.Attributes.Contains("bpf_opportunityid") ? (preImageMisc.GetAttributeValue<EntityReference>("bpf_opportunityid")).Id : (preImageMisc.GetAttributeValue<EntityReference>("opportunityid")).Id;
 
-                            Guid lastActivestageID = (preImageMisc.GetAttributeValue<EntityReference>("activestageid")).Id;
+                                lastActivestageID = (preImageMisc.GetAttributeValue<EntityReference>("activestageid")).Id;
 
-                            //Calculate_Price(opportunity_guid, serviceType, context.MessageName, context.PrimaryEntityId);
-                            RetrieveandUpdateActivestageEndDate(opportunityId, lastActivestageID,entity.Id);
+                                stageName = (preImageMisc.GetAttributeValue<EntityReference>("activestageid")).Name;
                             }
                         }
+                         
+                            if (context.PostEntityImages.Contains("Image"))
+                        {
+                                Entity postImageMisc = (Entity)context.PostEntityImages["Image"];
+                                if (postImageMisc.Attributes.Contains("bpf_opportunityid") || postImageMisc.Attributes.Contains("opportunityid"))
+                                {
 
-                    }
+                                    opportunityId = postImageMisc.Attributes.Contains("bpf_opportunityid") ? (postImageMisc.GetAttributeValue<EntityReference>("bpf_opportunityid")).Id : (postImageMisc.GetAttributeValue<EntityReference>("opportunityid")).Id;
+
+                                    activeStageID = (postImageMisc.GetAttributeValue<EntityReference>("activestageid")).Id;
+
+                                    stageName = (postImageMisc.GetAttributeValue<EntityReference>("activestageid")).Name;
+
+                                     stageStatus = postImageMisc.GetAttributeValue<OptionSetValue>("statecode").Value;
+                                }
+                            }
+                        if ( context.MessageName.ToUpper() == "UPDATE")
+                        {                           
+
+                                RetrieveandUpdateActivestageEndDate(opportunityId, lastActivestageID, entity.Id, stageName);
+
+                            if (stageStatus == 0)
+                            {
+                                CreateOpportunityStageDuration(opportunityId, activeStageID, stageName);
+                            }
+                          
+                        }
+                        else if (context.MessageName.ToUpper() == "CREATE")
+                        {
+                           
+                                CreateOpportunityStageDuration(opportunityId, activeStageID, stageName);                      
+
+                        }
+                    }   
                     catch (Exception ex)
                     {
                         tracingService.Trace("Opp Line Plug-in", ex.ToString());
@@ -52,37 +87,53 @@ namespace BOLT.BayCity.Plug.ins
 
             }
         }
-        public void RetrieveandUpdateActivestageEndDate(Guid oppId, Guid lastActivestageId, Guid bpfId)
+        public void RetrieveandUpdateActivestageEndDate(Guid oppId, Guid stageId, Guid bpfId, string StageName)
         {
             // Define Condition Values
+            //Get The Last Active Stage
             var query_bolt_opprtunity = oppId;
             var query_bolt_businessprocess =  bpfId;
-            var query_bolt_processstage = lastActivestageId;
+            var query_bolt_processstage = stageId.ToString();
+            var query_bolt_processstatus = "Active";
 
             // Instantiate QueryExpression query
-            var query = new QueryExpression("bolt_opportunitystageduration");
+            var query = new QueryExpression("tb_opportunitystageduration");
 
             // Add columns to query.ColumnSet
-            query.ColumnSet.AddColumns("bolt_businessprocess", "bolt_enddate", "bolt_name", "bolt_opportunitystagedurationid", "bolt_opprtunity", "bolt_processname", "bolt_processstage", "bolt_startdate", "createdby", "createdon", "createdonbehalfby", "modifiedby", "modifiedon", "modifiedonbehalfby", "overriddencreatedon", "ownerid", "owningbusinessunit", "statecode", "statuscode");
+            query.ColumnSet.AddColumns("tb_completedon", "tb_name", "tb_opportunitystagedurationid", "tb_opportunity", "tb_stagestatus", "tb_activestage", "tb_startedon", "createdby", "createdon", "createdonbehalfby", "modifiedby", "modifiedon", "modifiedonbehalfby", "overriddencreatedon", "ownerid", "owningbusinessunit", "statecode", "statuscode");
 
             // Define filter query.Criteria
-            query.Criteria.AddCondition("bolt_opprtunity", ConditionOperator.Equal, query_bolt_opprtunity);
+            query.Criteria.AddCondition("tb_opportunity", ConditionOperator.Equal, query_bolt_opprtunity);
            // query.Criteria.AddCondition("bolt_businessprocess", ConditionOperator.Equal, query_bolt_businessprocess);
-            query.Criteria.AddCondition("bolt_processstage", ConditionOperator.Equal, query_bolt_processstage);
-
+            query.Criteria.AddCondition("tb_activestage", ConditionOperator.Equal, query_bolt_processstage);
+            query.Criteria.AddCondition("tb_stagestatus", ConditionOperator.Equal, query_bolt_processstatus);
             EntityCollection ec = service.RetrieveMultiple(query);
 
             if(ec.Entities.Count>0)
             {
-                Entity osd = new Entity("bolt_opportunitystageduration");
+                Entity osd = new Entity("tb_opportunitystageduration");
 
                 osd.Id = ec.Entities[0].Id;
                 //var datetime = new DateTime();
-                osd["bolt_enddate"] = DateTime.Now;
-                osd["bolt_stagestatus"] = true; //0=active, 1 = completed 
+                osd["tb_completedon"] = DateTime.Now;
+                osd["tb_stagestatus"] = "Closed";
                 service.Update(osd);
-            }
+            }         
+        
+        }
 
+        public void CreateOpportunityStageDuration(Guid oppId, Guid ActivestageId, string StageName)
+        {
+          
+            Entity osd = new Entity("tb_opportunitystageduration");
+
+
+            osd["tb_name"] = StageName;
+            osd["tb_startedon"] = DateTime.Now;
+            osd["tb_stagestatus"] = "Active";
+            osd["tb_opportunity"] = new EntityReference("opportunity", oppId);
+            osd["tb_activestage"] = ActivestageId.ToString();
+            service.Create(osd);
         }
     }
 }
