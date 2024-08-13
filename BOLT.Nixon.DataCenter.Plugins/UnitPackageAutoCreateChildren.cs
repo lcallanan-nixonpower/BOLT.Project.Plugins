@@ -40,36 +40,41 @@ namespace BOLT.Nixon.DataCenter.Plugins
                     // Create pointer to context target
                     Entity target = (Entity)context.InputParameters["Target"];
 
-                    // Retrieve optionset values for Category field
-                    var attributeRequest = new RetrieveAttributeRequest
+                    // Checks if "Clone Package Parent" is null, i.e. won't run if target is being created as a clone.
+                    if (target.GetAttributeValue<EntityReference>("bolt_package") is null)
                     {
-                        EntityLogicalName = "bolt_datacenterpm",
-                        LogicalName = "bolt_category",
-                        RetrieveAsIfPublished = true
-                    };
-                    var attributeResponse = (RetrieveAttributeResponse)service.Execute(attributeRequest);
-                    var attributeMetadata = (EnumAttributeMetadata)attributeResponse.AttributeMetadata;
 
-                    // Initiate Entity Collection for related Data Center PMs
-                    EntityCollection child_records = new EntityCollection();
+                        // Retrieve optionset values for Category field
+                        var attributeRequest = new RetrieveAttributeRequest
+                        {
+                            EntityLogicalName = "bolt_datacenterpm",
+                            LogicalName = "bolt_category",
+                            RetrieveAsIfPublished = true
+                        };
+                        var attributeResponse = (RetrieveAttributeResponse)service.Execute(attributeRequest);
+                        var attributeMetadata = (EnumAttributeMetadata)attributeResponse.AttributeMetadata;
 
-                    // Loop through the options creating new child records and add to target Related Entities
-                    foreach (OptionMetadata option in attributeMetadata.OptionSet.Options)
-                    {
-                        Entity DataCenterPM = new Entity("bolt_datacenterpm");
-                        DataCenterPM["bolt_category"] = new OptionSetValue((int)option.Value);
-                        DataCenterPM["bolt_po"] = option.Label.UserLocalizedLabel.Label;
-                        DataCenterPM["ownerid"] = new Entity("systemuser", context.InitiatingUserId).ToEntityReference();
+                        // Initiate Entity Collection for related Data Center PMs
+                        EntityCollection child_records = new EntityCollection();
 
-                        Guid recordID = service.Create(DataCenterPM);
+                        // Loop through the options creating new child records and add to target Related Entities
+                        foreach (OptionMetadata option in attributeMetadata.OptionSet.Options)
+                        {
+                            Entity DataCenterPM = new Entity("bolt_datacenterpm");
+                            DataCenterPM["bolt_category"] = new OptionSetValue((int)option.Value);
+                            DataCenterPM["bolt_po"] = option.Label.UserLocalizedLabel.Label;
+                            DataCenterPM["ownerid"] = new Entity("systemuser", context.InitiatingUserId).ToEntityReference();
 
-                        child_records.Entities.Add(new Entity("bolt_datacenterpm", recordID));
+                            Guid recordID = service.Create(DataCenterPM);
+
+                            child_records.Entities.Add(new Entity("bolt_datacenterpm", recordID));
+                        }
+
+                        // Add child records to target
+                        target.RelatedEntities.Add(new Relationship("bolt_bolt_datacenterunitpackage_bolt_datacenterpm_RelatedPackage"), child_records);
+
+                        service.Update(target);
                     }
-
-                    // Add child records to target
-                    target.RelatedEntities.Add(new Relationship("bolt_bolt_datacenterunitpackage_bolt_datacenterpm_RelatedPackage"), child_records);
-
-                    service.Update(target);
                 }
 
                 catch (FaultException<OrganizationServiceFault> ex)
