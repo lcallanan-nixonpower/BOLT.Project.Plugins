@@ -89,6 +89,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="UnitPackageAutoCreateChildren.cs" />
+    <Compile Include="DCCostSheetRollupCostPrice.cs" />
+    <Compile Include="DCCostSheetCalculateCost.cs" />
     <Compile Include="CostSheetAMountsCalculation.cs" />
     <Compile Include="CreateUnits.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
