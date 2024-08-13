@@ -124,19 +124,24 @@ namespace BOLT.Nixon.DataCenter.Plugins
         }
         public void CreatePackages(int cloneNumber, int existingpackagescount, Entity pImage)
         {
-            for(int i =1; i<=cloneNumber;i++)
+            // New entity will be copy of post-image
+            Entity package = pImage;
+            // Set original/parent as the Clone Package Parent ("bolt_package")
+            package["bolt_package"] = new EntityReference(pImage.LogicalName, pImage.Id);
+            
+            // Remove attributes/properties for all new clones
+            package.Attributes.Remove("bolt_numberofclones");
+            package.Attributes.Remove("bolt_clone");
+            package.Id = Guid.Empty;
+            package.Attributes.Remove("bolt_datacenterunitpackageid");
+            
+            // Create clones and children
+            for (int i =1; i<=cloneNumber;i++)
             {
-                // Instead of creating new entity and populating values, setting new entity to post-image, then removing fields that should not be copied.
-                Entity package = pImage;
                 var packageNumber = (existingpackagescount + i);
                 package["bolt_name"] = "Package "+packageNumber.ToString()+"";
                 package["bolt_packagenumber"] = packageNumber;
                 
-                package.Attributes.Remove("bolt_numberofclones");
-                package.Attributes.Remove("bolt_clone");
-                package.Id = Guid.Empty;
-                package.Attributes.Remove("bolt_datacenterunitpackageid");
-
                 Guid newPackageID = service.Create(package);
                 if(buyoutpos.Entities.Count>0)
                 CreateIndividualUnits(newPackageID);
