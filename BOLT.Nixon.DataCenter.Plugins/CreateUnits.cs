@@ -43,7 +43,7 @@ namespace BOLT.Nixon.DataCenter.Plugins
                                 return;
 
                             //var numberOfUnits = postImage.GetAttributeValue<int>("bolt_unitpackageqty");  //number of units                         
-                           relatedProject_guid = (postImage.Attributes.Contains("bolt_relatedproject") ? (postImage.GetAttributeValue<EntityReference>("bolt_relatedproject")).Id:new Guid("00000000-0000-0000-0000-000000000000"));
+                            relatedProject_guid = (postImage.Attributes.Contains("bolt_relatedproject") ? (postImage.GetAttributeValue<EntityReference>("bolt_relatedproject")).Id : new Guid("00000000-0000-0000-0000-000000000000"));
                             var modelNumber = (postImage.Attributes.Contains("bolt_unitmodel") ? postImage.GetAttributeValue<string>("bolt_unitmodel") : "N/A");
                            
                             var numberofClones = (postImage.Attributes.Contains("bolt_numberofclones") ? postImage.GetAttributeValue<int>("bolt_numberofclones") : 0);
@@ -126,26 +126,17 @@ namespace BOLT.Nixon.DataCenter.Plugins
         {
             for(int i =1; i<=cloneNumber;i++)
             {
-                Entity package = new Entity("bolt_datacenterunitpackage");
+                // Instead of creating new entity and populating values, setting new entity to post-image, then removing fields that should not be copied.
+                Entity package = pImage;
                 var packageNumber = (existingpackagescount + i);
                 package["bolt_name"] = "Package "+packageNumber.ToString()+"";
                 package["bolt_packagenumber"] = packageNumber;
-                if (pImage.Attributes.Contains("bolt_unitmodel"))
-                {
-                    package["bolt_unitmodel"] = pImage.GetAttributeValue<string>("bolt_unitmodel");
-                }
-                if (pImage.Attributes.Contains("bolt_unitprice"))
-                {
-                    package["bolt_unitprice"] = pImage.GetAttributeValue<Money>("bolt_unitprice");
-                }
-                if (pImage.Attributes.Contains("bolt_unitcost"))
-                {
-                    package["bolt_unitcost"] = pImage.GetAttributeValue<Money>("bolt_unitcost");
-                }
-                if (pImage.Attributes.Contains("bolt_relatedproject"))
-                {
-                    package["bolt_relatedproject"] = new EntityReference("new_job", relatedProject_guid);
-                }
+                
+                package.Attributes.Remove("bolt_numberofclones");
+                package.Attributes.Remove("bolt_clone");
+                package.Id = Guid.Empty;
+                package.Attributes.Remove("bolt_datacenterunitpackageid");
+
                 Guid newPackageID = service.Create(package);
                 if(buyoutpos.Entities.Count>0)
                 CreateIndividualUnits(newPackageID);
