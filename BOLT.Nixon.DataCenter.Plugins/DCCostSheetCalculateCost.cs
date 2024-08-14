@@ -46,6 +46,8 @@ namespace BOLT.Nixon.DataCenter.Plugins
                     Money miscCost4 = entity.GetAttributeValue<Money>("bolt_4misccost") ?? new Money(0);
                     Money miscCost5 = entity.GetAttributeValue<Money>("bolt_5misccost") ?? new Money(0);
                     Money miscCost6 = entity.GetAttributeValue<Money>("bolt_6misccost") ?? new Money(0);
+                    Money miscCost7 = entity.GetAttributeValue<Money>("bolt_7misccost") ?? new Money(0);
+                    Money miscCost8 = entity.GetAttributeValue<Money>("bolt_8misccost") ?? new Money(0);
                     Money tankCost = entity.GetAttributeValue<Money>("bolt_tankenclosurecost") ?? new Money(0);
                     Money breakerCost = entity.GetAttributeValue<Money>("bolt_breakercost") ?? new Money(0);
                     Money connectionCost = entity.GetAttributeValue<Money>("bolt_camlockconnectionboxcost") ?? new Money(0);
@@ -55,7 +57,7 @@ namespace BOLT.Nixon.DataCenter.Plugins
 
                     // Set Total Cost as Money
                     Money totalCost = new Money(generatorCost.Value + miscCost1.Value + miscCost2.Value + miscCost3.Value + miscCost4.Value + miscCost5.Value + miscCost6.Value 
-                                                +tankCost.Value + breakerCost.Value + connectionCost.Value + dpfCost.Value + startupCost.Value + freightCost.Value);
+                                                + miscCost7.Value + miscCost8.Value + tankCost.Value + breakerCost.Value + connectionCost.Value + dpfCost.Value + startupCost.Value + freightCost.Value);
 
                     // Add Total Cost to Target entity
                     Entity update_entity = new Entity(entity.LogicalName, entity.Id);
