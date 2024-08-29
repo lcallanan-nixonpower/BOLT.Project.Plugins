@@ -143,7 +143,11 @@ namespace BOLT.Nixon.DataCenter.Plugins
                 for (int i = 1; i <= cloneNumber; i++)
                 {
                     var packageNumber = (existingpackagescount + i);
-                    int packageNumLength = packageNumber.ToString("D").Length + 1; // Used to add padding to enumerated names
+                    int packageNumLength = packageNumber.ToString("D").Length; // Used to add padding to enumerated names
+                    if (packageNumLength < 2)
+                    {
+                        packageNumLength += 1;
+                    }
                     package["bolt_name"] = (pImage.Attributes.Contains("bolt_name")) ? pImage.GetAttributeValue<string>("bolt_name") + "-" + packageNumber.ToString("D" + packageNumLength.ToString()) : packageNumber.ToString("D" + packageNumLength.ToString());
                     package["bolt_packagenumber"] = packageNumber;
 
