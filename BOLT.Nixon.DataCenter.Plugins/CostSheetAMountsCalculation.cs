@@ -11,7 +11,8 @@ using Microsoft.Xrm.Sdk.Query;
 
 namespace BOLT.Nixon.DataCenter.Plugins
 {
-    public class CostSheetAMountsCalculation : IPlugin
+    // Removed public designation since plugin is no longer required and won't be included when updating plugin package via PRT.
+    class CostSheetAMountsCalculation : IPlugin
     {
         IOrganizationService service;
         ITracingService tracingService;
