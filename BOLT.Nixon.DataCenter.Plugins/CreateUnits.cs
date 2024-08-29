@@ -126,8 +126,8 @@ namespace BOLT.Nixon.DataCenter.Plugins
                 // New entity will be copy of Target, Post-Operation
                 // This method just avoids having to manually copy each field from pImage to the new Entity object.
                 Entity package = service.Retrieve(
-                    ((Entity)context.InputParameters["Target"]).LogicalName,
-                    ((Entity)context.InputParameters["Target"]).Id,
+                    pImage.LogicalName,
+                    pImage.Id,
                     new ColumnSet(true));
 
                 // Set original/parent as the Clone Package Parent ("bolt_package")
@@ -143,7 +143,8 @@ namespace BOLT.Nixon.DataCenter.Plugins
                 for (int i = 1; i <= cloneNumber; i++)
                 {
                     var packageNumber = (existingpackagescount + i);
-                    package["bolt_name"] = (pImage.Attributes.Contains("bolt_name")) ? pImage.GetAttributeValue<string>("bolt_name") + "-" + packageNumber.ToString() : packageNumber.ToString();
+                    int packageNumLength = packageNumber.ToString("D").Length + 1; // Used to add padding to enumerated names
+                    package["bolt_name"] = (pImage.Attributes.Contains("bolt_name")) ? pImage.GetAttributeValue<string>("bolt_name") + "-" + packageNumber.ToString("D" + packageNumLength.ToString()) : packageNumber.ToString("D" + packageNumLength.ToString());
                     package["bolt_packagenumber"] = packageNumber;
 
                     Guid newPackageID = service.Create(package);
