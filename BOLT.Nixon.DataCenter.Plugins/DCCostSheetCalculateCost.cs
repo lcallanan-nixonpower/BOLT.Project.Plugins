@@ -10,6 +10,16 @@ namespace BOLT.Nixon.DataCenter.Plugins
 {
     public class DCCostSheetCalculateCostPrice : IPlugin
     {
+        /// <summary>
+        /// A plugin that calculates Cost for for Data Center Cost Sheet.
+        /// </summary>
+        /// <remarks>
+        /// Entity: bolt_datacentercostsheet (Data Center Cost Sheet)
+        /// Message, Stage, Order, Mode: Create, PostOperation, 1, Synchronous, Filter - bolt_1misccost, bolt_2misccost, bolt_breakercost, bolt_camlockconnectionboxcost, bolt_dpfcost, bolt_freightcost, bolt_generatorcost, bolt_totalstartupcost, bolt_tankenclosurecost
+        /// Image: Post Image - bolt_1misccost, bolt_2misccost, bolt_breakercost, bolt_camlockconnectionboxcost, bolt_dpfcost, bolt_freightcost, bolt_generatorcost, bolt_totalstartupcost, bolt_tankenclosurecost
+        /// Message, Stage, Order, Mode: Update, PostOperation, 1, Synchronous, Filter - bolt_1misccost, bolt_2misccost, bolt_breakercost, bolt_camlockconnectionboxcost, bolt_dpfcost, bolt_freightcost, bolt_generatorcost, bolt_totalstartupcost, bolt_tankenclosurecost
+        /// Image: Post Image - bolt_1misccost, bolt_2misccost, bolt_breakercost, bolt_camlockconnectionboxcost, bolt_dpfcost, bolt_freightcost, bolt_generatorcost, bolt_totalstartupcost, bolt_tankenclosurecost
+        /// </remarks>
         public void Execute(IServiceProvider serviceProvider)
         {
             // Obtain the tracing service

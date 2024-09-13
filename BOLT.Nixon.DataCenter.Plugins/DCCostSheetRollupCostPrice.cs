@@ -10,6 +10,16 @@ namespace BOLT.Nixon.DataCenter.Plugins
 {
     public class DCCostSheetRollupCostPrice : IPlugin
     {
+        /// <summary>
+        /// A plugin that rolls up the Cost and Price fields from Cost Sheet to Project for Data Center entities.
+        /// </summary>
+        /// <remarks>
+        /// Entity: bolt_datacentercostsheet (Data Center Cost Sheet)
+        /// Message, Stage, Order, Mode: Create, PostOperation, 1, Synchronous, Filter - bolt_quotedprice, bolt_totalcost
+        /// Image: Post Image - bolt_primary, bolt_project, bolt_quotedprice, bolt_totalcost
+        /// Message, Stage, Order, Mode: Update, PostOperation, 1, Synchronous, Filter - bolt_primary, bolt_quotedprice, bolt_totalcost
+        /// Image: Post Image - bolt_primary, bolt_project, bolt_quotedprice, bolt_totalcost
+        /// </remarks>
         public void Execute(IServiceProvider serviceProvider)
         {
             // Obtain the tracing service

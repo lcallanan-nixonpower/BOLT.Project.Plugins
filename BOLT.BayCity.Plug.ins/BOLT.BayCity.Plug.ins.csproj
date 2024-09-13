@@ -90,6 +90,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CalculateActivestageDuration.cs" />
+    <Compile Include="PMServiceSpecialPricingApproval.cs" />
     <Compile Include="CostSheetTotalPMCost.cs" />
     <Compile Include="OpportunityCalculation.cs" />
     <Compile Include="OpportunityLineCost.cs" />

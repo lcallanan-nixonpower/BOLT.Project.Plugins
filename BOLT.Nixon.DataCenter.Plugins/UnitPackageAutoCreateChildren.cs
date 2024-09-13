@@ -12,6 +12,15 @@ namespace BOLT.Nixon.DataCenter.Plugins
 {
     public class UnitPackageAutoCreateChildren : IPlugin
     {
+        /// <summary>
+        /// A plugin that auto creates the Package children records on create of a new Unit Pacakage. The plugin only works for manually created Packages and NOT those created via cloning.
+        /// </summary>
+        /// <remarks>
+        /// Entity: bolt_datacenterunitpackage (Data Center Unit Package)
+        /// Message: Create
+        /// Stage: Post Operation
+        /// Mode: Synchronous
+        /// </remarks>
         public void Execute(IServiceProvider serviceProvider)
         {
             // Obtain the tracing service
